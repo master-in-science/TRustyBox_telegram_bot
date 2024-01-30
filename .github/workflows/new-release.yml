@@ -77,6 +77,7 @@ jobs:
     name: "Upload assets to Github releases"
     # if: ${{ github.event.workflow_run.conclusion == 'success' }}
     needs: 
+      - "repo-lower"
       - "get-tag"
       - "create-release"
     strategy:
@@ -96,7 +97,7 @@ jobs:
         with:
           # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
           # Note that glob pattern is not supported yet.
-          bin: ${{ github.event.repository.name }}
+          bin: ${{ needs.repo-lower.outputs.repo-name }}
           # (optional) Target triple, default is host triple.
           target: ${{ matrix.target }}
           # (optional) Archive name (non-extension portion of filename) to be uploaded.
@@ -117,6 +118,7 @@ jobs:
     name: "Push Docker image to GHCR"
     # if: ${{ github.event.workflow_run.conclusion == 'success' }}
     needs:
+      - "repo-lower"
       - "get-tag"
       - "upload-assets"
     runs-on: "ubuntu-latest"
@@ -141,7 +143,7 @@ jobs:
         id: "meta"
         uses: "docker/metadata-action@v5.5.0"
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ needs.repo-lower.outputs.repo }}
       
       - name: "Build and push Docker image"
         uses: "docker/build-push-action@v5.1.0"
@@ -149,6 +151,6 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64, linux/arm64/v8
-          tags: ${{ github.repository }}:latest,${{ github.repository }}:v${{ needs.get-tag.outputs.pkg-version }}
+          tags: ${{ needs.repo-lower.outputs.repo }}:latest,${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
           # tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
