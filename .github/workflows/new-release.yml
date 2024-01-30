@@ -132,7 +132,6 @@ jobs:
     needs:
       - "repo-lower"
       - "get-tag"
-      - "upload-assets"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Check out the repo"
