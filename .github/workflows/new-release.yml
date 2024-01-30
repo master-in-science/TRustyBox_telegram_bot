@@ -10,6 +10,32 @@ on:
   workflow_dispatch:
 
 jobs:
+  repo-lower:
+    name: "Lowercase Repository Name"
+    runs-on: "ubuntu-latest"
+    outputs:
+      repo: ${{ steps.pkg-version.outputs.REPO }} 
+      repo-name: ${{ steps.pkg-version.outputs.REPO_NAME }} 
+    steps:
+      - name: "Check out the repo"
+        uses: actions/checkout@v4.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Lowercase github.repository"
+        id: "repo"
+        shell: "bash"
+        # echo "REPO=`echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'`" >> $GITHUB_OUTPUT
+        # echo "REPO=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
+        run: |
+          echo "REPO=`echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'`" >> $GITHUB_OUTPUT
+
+      - name: "Lowercase github.event.repository.name"
+        id: "repo-name"
+        shell: "bash"
+        run: |
+          echo "REPO_NAME=`echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]'`" >> $GITHUB_OUTPUT
+
   get-tag:
     name: "Get Tag From Package Version"
     runs-on: "ubuntu-latest"
