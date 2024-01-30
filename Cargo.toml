@@ -1,5 +1,6 @@
 [package]
-name = "trustybox_telegram_bot"
+#name = "trustybox_telegram_bot"
+name = "trusty"
 version = "0.1.0"
 edition = "2021"
 
