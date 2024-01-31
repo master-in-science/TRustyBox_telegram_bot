@@ -177,6 +177,6 @@ jobs:
           push: true
           platforms: ${{ matrix.platforms }}
           # tags: ${{ steps.meta.outputs.tags }}
-          tags: ${{ needs.repo-lower.outputs.repo }}:latest,${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
+          tags: ghcr.io/${{ needs.repo-lower.outputs.repo }}:latest,ghcr.io/${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
           labels: ${{ steps.meta.outputs.labels }}
           # outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=Trusty Multi-Arch Image
