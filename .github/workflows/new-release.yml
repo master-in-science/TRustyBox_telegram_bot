@@ -20,13 +20,12 @@ jobs:
       - name: "Checkout The Repository"
         uses: actions/checkout@v4.1.1
 
-      # echo "REPO=`echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'`" >> $GITHUB_OUTPUT
-      # echo "REPO=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
       - name: "Lowercase github.repository"
         id: "repo"
         shell: "bash"
         run: |
           echo "REPO=`echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'`" >> $GITHUB_OUTPUT
+        # echo "REPO=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
 
       - name: "Lowercase github.event.repository.name"
         id: "repo-name"
@@ -57,7 +56,7 @@ jobs:
     steps:
       - name: "Checkout The Repository"
         uses: actions/checkout@v4.1.1
-      
+
       - name: "Create release"
         uses: "taiki-e/create-gh-release-action@v1"
         with:
@@ -69,64 +68,68 @@ jobs:
           branch: "main"
           ref: refs/tags/v${{ needs.get-tag.outputs.pkg-version }}
 
-  upload-assets:
-    name: "Upload assets to Github releases"
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    needs: 
-      - "repo-lower"
-      - "get-tag"
-      - "create-release"
-    continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - linux/arm64
-          - linux/arm64/v8
-          # - linux/amd64
-          # - linux/arm/v6
-          # - linux/arm/v7
-        # include:
-        #   - target: "x86_64-unknown-linux-gnu"
-        #     os: "ubuntu-latest"
-        #     node: 20
-        #     npm: 10
-        #   # - target: "x86_64-unknown-linux-musl"
-        #   #   os: "ubuntu-latest"
-        #   # - target: "aarch64-unknown-linux-musl"
-        #   #   os: "ubuntu-latest"
-        #   # - target: "aarch64-unknown-linux-musl"
-          #   os: "ubuntu-latest"
-    runs-on: ${{ matrix.platform }}
-    # runs-on: ${{ matrix.os }}
-    steps:
-      - name: "Checkout The Repository"
-        uses: actions/checkout@v4.1.1
-
-      - name: Install OpenSSL
-        run: sudo apt-get install -y pkg-config libssl-dev
-
-      - name: "Upload Binaries"
-        uses: "taiki-e/upload-rust-binary-action@v1"
-        with:
-          # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
-          # Note that glob pattern is not supported yet.
-          bin: ${{ needs.repo-lower.outputs.repo-name }}
-          # (optional) Target triple, default is host triple.
-          target: ${{ matrix.target }}
-          # (optional) Archive name (non-extension portion of filename) to be uploaded.
-          # [default value: $bin-$target]
-          # [possible values: the following variables and any string]
-          #   variables:
-          #     - $bin    - Binary name (non-extension portion of filename).
-          #     - $target - Target triple.
-          #     - $tag    - Tag of this release.
-          # When multiple binary names are specified, default archive name or $bin variable cannot be used.
-          archive: $bin-${{ matrix.target }}
-          # Select the tag
-          ref: refs/tags/v${{ needs.get-tag.outputs.pkg-version }}
-          # (required) GitHub token for uploading assets to GitHub Releases.
-          token: ${{ secrets.GITHUB_TOKEN }}
+  # 
+  # 
+  # upload-assets:
+  #   name: "Upload assets to Github releases"
+  #   # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  #   needs: 
+  #     - "repo-lower"
+  #     - "get-tag"
+  #     - "create-release"
+  #   continue-on-error: true
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       platform:
+  #         - linux/arm64
+  #         - linux/arm64/v8
+  #         # - linux/amd64
+  #         # - linux/arm/v6
+  #         # - linux/arm/v7
+  #       # include:
+  #       #   - target: "x86_64-unknown-linux-gnu"
+  #       #     os: "ubuntu-latest"
+  #       #     node: 20
+  #       #     npm: 10
+  #       #   # - target: "x86_64-unknown-linux-musl"
+  #       #   #   os: "ubuntu-latest"
+  #       #   # - target: "aarch64-unknown-linux-musl"
+  #       #   #   os: "ubuntu-latest"
+  #       #   # - target: "aarch64-unknown-linux-musl"
+  #         #   os: "ubuntu-latest"
+  #   runs-on: ${{ matrix.platform }}
+  #   # runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: "Checkout The Repository"
+  #       uses: actions/checkout@v4.1.1
+  # 
+  #     - name: Install OpenSSL
+  #       run: sudo apt-get install -y pkg-config libssl-dev
+  # 
+  #     - name: "Upload Binaries"
+  #       uses: "taiki-e/upload-rust-binary-action@v1"
+  #       with:
+  #         # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
+  #         # Note that glob pattern is not supported yet.
+  #         bin: ${{ needs.repo-lower.outputs.repo-name }}
+  #         # (optional) Target triple, default is host triple.
+  #         target: ${{ matrix.target }}
+  #         # (optional) Archive name (non-extension portion of filename) to be uploaded.
+  #         # [default value: $bin-$target]
+  #         # [possible values: the following variables and any string]
+  #         #   variables:
+  #         #     - $bin    - Binary name (non-extension portion of filename).
+  #         #     - $target - Target triple.
+  #         #     - $tag    - Tag of this release.
+  #         # When multiple binary names are specified, default archive name or $bin variable cannot be used.
+  #         archive: $bin-${{ matrix.target }}
+  #         # Select the tag
+  #         ref: refs/tags/v${{ needs.get-tag.outputs.pkg-version }}
+  #         # (required) GitHub token for uploading assets to GitHub Releases.
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  # 
+  # 
 
   push-to-registry:
     name: "Push Docker image to GHCR"
@@ -157,6 +160,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_PAT }}
           # password: ${{ github.token }}
+          # password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Extract metadata (tags, labels) for Docker"
         id: "meta"
@@ -168,9 +172,10 @@ jobs:
         uses: "docker/build-push-action@v5.1.0"
         with:
           context: .
-          # file: Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          file: Dockerfile
+          # push: ${{ github.event_name != 'pull_request' }}
+          push: true
           platforms: ${{ matrix.platform }}
-          # tags: ${{ needs.repo-lower.outputs.repo }}:latest,${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
-          tags: ${{ steps.meta.outputs.tags }}
+          # tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ needs.repo-lower.outputs.repo }}:latest,${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
           labels: ${{ steps.meta.outputs.labels }}
