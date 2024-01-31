@@ -172,10 +172,11 @@ jobs:
         uses: "docker/build-push-action@v5.1.0"
         with:
           context: .
-          file: Dockerfile
+          file: ./Dockerfile
           # push: ${{ github.event_name != 'pull_request' }}
           push: true
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ matrix.platforms }}
           # tags: ${{ steps.meta.outputs.tags }}
           tags: ${{ needs.repo-lower.outputs.repo }}:latest,${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
           labels: ${{ steps.meta.outputs.labels }}
+          # outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=Trusty Multi-Arch Image
