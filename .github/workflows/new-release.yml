@@ -76,24 +76,21 @@ jobs:
       - "repo-lower"
       - "get-tag"
       - "create-release"
+    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
-        matrix:
-          platform:
-            - linux/arm64
-            - linux/arm64/v8
-            # - linux/amd64
-            # - linux/arm/v6
-            # - linux/arm/v7
-            # include:
-            #   - target: "x86_64-unknown-linux-gnu"
-            #     os: "ubuntu-latest"
-            #   # - target: "x86_64-unknown-linux-musl"
-            #   #   os: "ubuntu-latest"
-            #   # - target: "aarch64-unknown-linux-musl"
-            #   #   os: "ubuntu-latest"
-            #   # - target: "aarch64-unknown-linux-musl"
-            #   #   os: "ubuntu-latest"
+        include:
+          - target: "x86_64-unknown-linux-gnu"
+            os: "ubuntu-latest"
+            node: 20
+            npm: 10
+          # - target: "x86_64-unknown-linux-musl"
+          #   os: "ubuntu-latest"
+          # - target: "aarch64-unknown-linux-musl"
+          #   os: "ubuntu-latest"
+          # - target: "aarch64-unknown-linux-musl"
+          #   os: "ubuntu-latest"
     runs-on: ${{ matrix.platform }}
     # runs-on: ${{ matrix.os }}
     steps:
@@ -133,10 +130,9 @@ jobs:
       - "get-tag"
     strategy:
       matrix:
-        matrix:
-          platform:
-            - linux/arm64
-            - linux/arm64/v8
+        platform:
+          - linux/arm64
+          - linux/arm64/v8
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout The Repository"
