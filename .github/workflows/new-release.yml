@@ -78,11 +78,11 @@ jobs:
       - "create-release"
     strategy:
       matrix:
-        fail-fast: "false"
         matrix:
           platform:
             - linux/arm64
-            - linux/amd64
+            - linux/arm64/v8
+            # - linux/amd64
             # - linux/arm/v6
             # - linux/arm/v7
             # include:
@@ -131,6 +131,12 @@ jobs:
     needs:
       - "repo-lower"
       - "get-tag"
+    strategy:
+      matrix:
+        matrix:
+          platform:
+            - linux/arm64
+            - linux/arm64/v8
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout The Repository"
@@ -162,7 +168,7 @@ jobs:
           context: .
           # file: Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          # platforms: linux/amd64, linux/arm64/v8
+          platforms: ${{ matrix.platform }}
           # tags: ${{ needs.repo-lower.outputs.repo }}:latest,${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
