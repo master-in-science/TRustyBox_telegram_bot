@@ -17,10 +17,8 @@ jobs:
       repo: ${{ steps.repo.outputs.REPO }} 
       repo-name: ${{ steps.repo-name.outputs.REPO_NAME }} 
     steps:
-      - name: "Check out the repo"
+      - name: "Checkout The Repository"
         uses: actions/checkout@v4.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       # echo "REPO=`echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'`" >> $GITHUB_OUTPUT
       # echo "REPO=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
@@ -42,10 +40,8 @@ jobs:
     outputs:
       pkg-version: ${{ steps.pkg-version.outputs.PKG_VERSION }} 
     steps:
-      - name: "Check out the repo"
+      - name: "Checkout The Repository"
         uses: actions/checkout@v4.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Get tag"
         id: "pkg-version"
@@ -59,10 +55,8 @@ jobs:
     needs: "get-tag"
     runs-on: "ubuntu-latest"
     steps:
-      - name: "Check out the repo"
+      - name: "Checkout The Repository"
         uses: actions/checkout@v4.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: "Create release"
         uses: "taiki-e/create-gh-release-action@v1"
@@ -84,25 +78,30 @@ jobs:
       - "create-release"
     strategy:
       matrix:
-        include:
-          - target: "x86_64-unknown-linux-gnu"
-            os: "ubuntu-latest"
-          # - target: "x86_64-unknown-linux-musl"
-          #   os: "ubuntu-latest"
-          # - target: "aarch64-unknown-linux-musl"
-          #   os: "ubuntu-latest"
-          # - target: "aarch64-unknown-linux-musl"
-          #   os: "ubuntu-latest"
-    runs-on: ${{ matrix.os }}
+        fail-fast: false
+        matrix:
+          platform:
+            - linux/arm64
+            - linux/amd64
+            # - linux/arm/v6
+            # - linux/arm/v7
+        # include:
+        #   - target: "x86_64-unknown-linux-gnu"
+        #     os: "ubuntu-latest"
+        #   # - target: "x86_64-unknown-linux-musl"
+        #   #   os: "ubuntu-latest"
+        #   # - target: "aarch64-unknown-linux-musl"
+        #   #   os: "ubuntu-latest"
+        #   # - target: "aarch64-unknown-linux-musl"
+        #   #   os: "ubuntu-latest"
+    runs-on: ${{ matrix.platform }}
+    # runs-on: ${{ matrix.os }}
     steps:
-      - name: "Check out the repo"
+      - name: "Checkout The Repository"
         uses: actions/checkout@v4.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install OpenSSL
         run: sudo apt-get install -y pkg-config libssl-dev
-
 
       - name: "Upload Binaries"
         uses: "taiki-e/upload-rust-binary-action@v1"
@@ -134,10 +133,8 @@ jobs:
       - "get-tag"
     runs-on: "ubuntu-latest"
     steps:
-      - name: "Check out the repo"
+      - name: "Checkout The Repository"
         uses: actions/checkout@v4.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Set up QEMU"
         uses: docker/setup-qemu-action@v3.0.0
@@ -145,26 +142,27 @@ jobs:
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3.0.0
 
-      - name: "Login to GHCR"
+      - name: "Login to GitHub Container Registry (GHCR)"
         uses: docker/login-action@v3.0.0
         with:
-          registry: ghcr.io
+          registry: "ghcr.io"
           username: ${{ github.actor }}
           password: ${{ secrets.GH_PAT }}
           # password: ${{ github.token }}
-      
+
       - name: "Extract metadata (tags, labels) for Docker"
         id: "meta"
         uses: "docker/metadata-action@v5.5.0"
         with:
           images: ghcr.io/${{ needs.repo-lower.outputs.repo }}
-      
+
       - name: "Build and push Docker image"
         uses: "docker/build-push-action@v5.1.0"
         with:
           context: .
+          # file: Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           # platforms: linux/amd64, linux/arm64/v8
-          tags: ${{ needs.repo-lower.outputs.repo }}:latest,${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
-          # tags: ${{ steps.meta.outputs.tags }}
+          # tags: ${{ needs.repo-lower.outputs.repo }}:latest,${{ needs.repo-lower.outputs.repo }}:v${{ needs.get-tag.outputs.pkg-version }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
